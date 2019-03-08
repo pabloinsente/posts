@@ -1,0 +1,139 @@
+---
+title: Why linear independence, orthogonality and correlation (or the lack of it), are not the same thing
+author: Pablo Caceres
+date: March 7, 2019 
+output: html_notebook
+---
+
+
+
+During my statistics courses, the concepts of **orthogonality**, **linear independence**, and **uncorrelatedness** (or the lack of correlation) where among those ideas that constantly confused me since they were often used interchangeably to refer to the lack of association between variables or vectors. It wasn't until I started to study linear algebra that I finally understood that they are different. Here I attempt to briefly explain how they differ by using R code and plots for intuitive understanding for the non-mathematicians (like me!).
+
+### **I. Linear independence** 
+
+A pair of non-zero vectors **X** and **Y** are linearly independent if there is no constant **a** such that:
+
+$$ aX - Y = 0  $$
+
+This essentially means that **Y** *is not* an scaled version of **X**, or more technically, that **Y** can't be expressed as a linear combination of **X**. Let's plot a pair of linearly independent vectors to see how they look:
+
+```{r}
+library("plot3D")
+
+par(pty="s") # force square plot
+par("mar"= rep(4,4)) # change margins
+x0 = c(0,0) # origin position along the x axis
+y0 = c(0,0) # origin position along the y axis
+x1 = c(0.2,0.8) # X vector (y-axis, x-axis)
+y1 = c(0.9,0.4) # Y vector (y-axis, x-axis)
+
+cols <- c("blue", "red") # blue = X vector; red = Y vector
+offset = 0.07 # offset x and y labels
+
+arrows2D(x0, y0,  x1, y1, col = cols,
+         lwd = 3, bty ="n", xlim = c(-1, 1), ylim = c(-1, 1))
+# Add vertical and horizontal lines at c(0,0)
+abline(h =0, v = 0, lty = 2)
+# Add starting point of arrow
+points2D(x0, y0, add = TRUE, col="darkred", 
+          colkey = FALSE, pch = 19, cex = 1)
+# Add labels to the arrows
+text2D(x1+offset, y1+offset, c("X", "Y"), add=TRUE, colkey = FALSE, cex = 1.2)
+
+```
+
+It is crucial to notice two things: (1) that no matter by what (non-zero) value we multiply **X**, we can't *move* **X** towards **Y**, therefore, they are linearly independent (they don't line along the same line in the plane); (2) even though **X** and **Y** are linearly independent, the angle between the vectors is *less* than 90°, which means that they are correlated (more on this later).
+
+### **II. Orthogonality**
+
+A pair of vectors **X** and **Y** are orthogonal if:
+$$ X'Y = 0 $$ 
+Which means that the dot product between **X** and **Y** must be zero. If you are not familiar with linear algebra, this is how you compute the dot product for the pair of two dimensional orthogonal vectors **X** = [ 0.0, 1.0] and **Y** = [1.0, 0.0]
+
+$$ (0*1) + (1*0) = 0 $$
+And this is how they look in the the plane:
+
+```{r}
+par(pty="s") # force square plot
+par("mar"= rep(4,4)) # change margins
+x0 = c(0,0) # origin position along the x axis
+y0 = c(0,0) # origin position along the y axis
+x1 = c(0.0,0.8) # tip of vectors on X
+y1 = c(0.8,0.0) # tip of vectors on Y 
+
+cols <- c("blue", "red") # blue = X vector; red = Y vector
+offset = 0.07 # offset x and y labels
+
+arrows2D(x0, y0,  x1, y1, col = cols,
+         lwd = 3, bty ="n", xlim = c(-1, 1), ylim = c(-1, 1))
+# Add vertical and horizontal lines at c(0,0)
+abline(h =0, v = 0, lty = 2)
+# Add starting point of arrow
+points2D(x0, y0, add = TRUE, col="darkred", 
+          colkey = FALSE, pch = 19, cex = 1)
+# Add labels to the arrows
+text2D(x1+offset, y1+offset, c("X", "Y"), add=TRUE, colkey = FALSE, cex = 1.2)
+
+```
+
+The vectors form a 90° angle, which is the geometrical way to look at orthogonality. When we work in two-dimensions we usually say that we have perpendicular vectors; in higher-dimensional spaces we usually use the word "orthogonal" to refer to the same idea. Again, some important observations: (1) **X** and **Y** are orthogonal AND linearly independent (which wasn't the case before, when we had linear independence but not orthogonality); (2) orthogonality is a special case of linear independence; (3) we're justified to say that the vectors are orthogonal, but not that they are uncorrelated. Let's see why next.
+
+
+
+### **III. Uncorrelated**
+A pair of vectors **X** and **Y** are uncorrelated if: 
+$$ (X-\bar{X})'(Y-\bar{Y}) = 0 $$
+Where \bar{X}  and \bar{Y} are the mean of the vectors **X** and **Y**. This means that **mean-centered** version of **X** and **Y** are perpendicular (form a 90° angle). If you observe carefully, the definition of orthogonality is similar to this one, but it doesn't require the vectors to be mean-centered. Now if we mean-center vectors **X** and **Y** this is what we obtain:
+
+```{r}
+
+x = data.frame("X" = c(0,0.8), "Y" = c(0.8,0))
+x$XCenter = x$X - mean(x$X)
+x$YCenter = x$Y - mean(x$Y)
+x[,]
+```
+
+Now lets plot both, the *raw* vectors and the *mean-centered* vectors:
+
+
+```{r}
+par(pty="s") # force square plot
+par("mar"= rep(4,4)) # change margins
+x0 = c(0,0) # origin position along the x axis
+y0 = c(0,0) # origin position along the y axis
+x1 = c(0.0,0.8, -0.4, 0.4) # tip of vectors on X
+y1 = c(0.8,0.0, 0.4, -0.4) # tip of vectors on Y 
+
+cols <- c("blue", "red", "green", "yellow") 
+# blue = X vector; red = Y vector; X_centered vector = green; Y_centered = yellow
+offset = 0.07 # offset x and y labels
+
+arrows2D(x0, y0,  x1, y1, col = cols,
+         lwd = 3, bty ="n", xlim = c(-1, 1), ylim = c(-1, 1))
+# Add vertical and horizontal lines at c(0,0)
+abline(h =0, v = 0, lty = 2)
+# Add starting point of arrow
+points2D(x0, y0, add = TRUE, col="darkred", 
+          colkey = FALSE, pch = 19, cex = 1)
+# Add labels to the arrows
+text2D(x1+offset, y1+offset, c("X", "Y", "XC", "YC"), add=TRUE, colkey = FALSE, cex = 1.2)
+
+```
+
+There you go: the mean-centered version of **X** and **Y** *are not* perpendicular, and therefore, non-orthogonal, yet, (anti)correlated(!). We went from a pair of orthogonal vectors, to a pair of non-orthogonal AND anti-correlated vectors as result of mean-centering the vectors. This is THE key point: orthogonal vectors can be correlated or (anti-correlated), because orthogonality is a property of the **raw** vectors, and correlation (or the lack of it) a property of **mean-centered** vectors. We can double check by computing the Pearson correlation in R:
+
+```{r}
+
+cor(x$X, x$Y) # Pearson correlation
+```
+
+The Pearson's correlation is -1, which is exactly what we saw in the graph (here we don't need to manually mean-center the vectors because the cor function does it for you).
+
+### In Summary
+
+- Linear independence, orthogonality, and correlation (or the lack of it) are different things 
+- Orthogonality is a special case of linear independence, where vectors form a 90° angle
+- Orthogonality is not synonymous of lack of correlation
+- Linear independence and orthogonality are properties of the *raw* vectors and correlation a property of the *mean-centered* vectors 
+
+The lack of clarity about such concepts is what leads to confusions like labeling "non-orthogonal contrast" to statistical procedures with categorical variables using coding schemes of *orthogonal* but *correlated* vectors (e.g., x = [0, 1, 0] and y = [0, 0, 1]; a more appropriate name would it be "correlated contrast analysis", althought that sounds kinda weird).
